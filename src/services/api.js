@@ -1,7 +1,23 @@
 import axios from 'axios';
 
+// Allow runtime override of the backend API URL so deployed frontend
+// can be pointed to any backend without rebuilding.
+function resolveBaseUrl() {
+  // 1) explicit runtime global (injected by hosting) e.g. window.__FA_API_URL
+  if (typeof window !== 'undefined' && window.__FA_API_URL) return window.__FA_API_URL;
+  // 2) user-saved override in localStorage
+  try {
+    const saved = (typeof window !== 'undefined') && window.localStorage && window.localStorage.getItem('FA_API_URL');
+    if (saved) return saved;
+  } catch (e) { /* ignore */ }
+  // 3) build-time env var configured in Vercel
+  if (import.meta.env.VITE_API_URL) return import.meta.env.VITE_API_URL;
+  // 4) fallback to localhost (use during local development)
+  return 'http://localhost:5000/api';
+}
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api',
+  baseURL: resolveBaseUrl(),
   headers: { 'Content-Type': 'application/json' },
 });
 
