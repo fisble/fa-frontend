@@ -9,7 +9,7 @@ export default function Students() {
     const loadStudents = async () => {
       dispatch({ type: 'SET_LOADING', payload: true });
       try {
-        const res = await fetchStudents();
+        const res = await fetchStudents({ page: 1, limit: 200 });
         dispatch({ type: 'SET_STUDENTS', payload: res.data.data || [] });
         dispatch({ type: 'SET_ERROR', payload: null });
       } catch (err) {
