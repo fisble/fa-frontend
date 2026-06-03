@@ -21,6 +21,25 @@ const api = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
+api.interceptors.request.use((config) => {
+  const currentBase = resolveBaseUrl();
+  if (config.baseURL !== currentBase) {
+    config.baseURL = currentBase;
+  }
+  return config;
+});
+
+export function setApiUrl(url) {
+  if (typeof window !== 'undefined') {
+    try {
+      window.localStorage.setItem('FA_API_URL', url);
+    } catch (e) {
+      console.warn('Cannot save API URL', e);
+    }
+  }
+  api.defaults.baseURL = url || resolveBaseUrl();
+}
+
 export const setAuthToken = (token) => {
   if (token) {
     api.defaults.headers.common.Authorization = `Bearer ${token}`;

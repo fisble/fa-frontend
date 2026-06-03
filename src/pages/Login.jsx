@@ -1,8 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
-import { setAuthToken, login as backendLogin, register as backendRegister } from '../services/api';
-import axios from 'axios';
+import { setAuthToken, setApiUrl, login as backendLogin, register as backendRegister } from '../services/api';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -11,6 +10,15 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('student');
   const [error, setError] = useState(null);
+  const [apiUrl, setApiUrlState] = useState('');
+  const [info, setInfo] = useState('');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const stored = window.localStorage.getItem('FA_API_URL') || window.__FA_API_URL || '';
+      setApiUrlState(stored);
+    }
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -49,7 +57,19 @@ export default function Login() {
     <main style={{ padding: '2rem', fontFamily: 'system-ui, sans-serif' }}>
       <h1>Login</h1>
       <form onSubmit={handleSubmit} data-testid="login-form">
-      <div>
+        <div>
+          <label htmlFor="apiUrl">Backend API URL</label>
+          <input
+            id="apiUrl"
+            value={apiUrl}
+            onChange={(e) => setApiUrlState(e.target.value)}
+            placeholder="https://your-backend.com/api"
+            style={{ width: '100%' }}
+          />
+          <button type="button" onClick={() => { setApiUrl(apiUrl); setInfo('API URL saved and will be used for requests.'); }} style={{ marginTop: '0.5rem' }}>Save API URL</button>
+          <p style={{ fontSize: '0.9rem', color: '#666' }}>If the app is not connecting, enter your backend API URL and save it.</p>
+        </div>
+        <div>
           <label htmlFor="email">Email</label>
           <input id="email" value={email} onChange={(e) => setEmail(e.target.value)} type="email" required />
         </div>
@@ -67,6 +87,7 @@ export default function Login() {
         </div>
         <button type="submit">Login</button>
         {error && <p style={{ color: 'red' }}>{error}</p>}
+        {info && <p style={{ color: 'green' }}>{info}</p>}
       </form>
     </main>
   );
