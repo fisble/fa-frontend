@@ -9,6 +9,7 @@ import Applications from './pages/Applications.jsx';
 import Interviews from './pages/Interviews.jsx';
 import ProtectedRoute from './router/ProtectedRoute.jsx';
 import { setAuthToken } from './services/api';
+import AdminSync from './pages/AdminSync.jsx';
 
 export default function App() {
   const { state, dispatch } = useAppContext();
@@ -33,6 +34,7 @@ export default function App() {
           <Link to="/drives" style={{ marginRight: '1rem' }}>Drives</Link>
           <Link to="/applications" style={{ marginRight: '1rem' }}>Applications</Link>
           <Link to="/interviews" style={{ marginRight: '1rem' }}>Interviews</Link>
+          <Link to="/admin-sync" style={{ marginRight: '1rem' }}>Admin Sync</Link>
         </div>
         <div>
           {state.authUser ? (
@@ -51,6 +53,7 @@ export default function App() {
         <Route path="/drives" element={<ProtectedRoute><Drives /></ProtectedRoute>} />
         <Route path="/applications" element={<ProtectedRoute><Applications /></ProtectedRoute>} />
         <Route path="/interviews" element={<ProtectedRoute><Interviews /></ProtectedRoute>} />
+        <Route path="/admin-sync" element={<ProtectedRoute><AdminSync /></ProtectedRoute>} />
         <Route path="/" element={state.authUser ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" replace />} />
       </Routes>
       <pre>{JSON.stringify(state, null, 2)}</pre>
