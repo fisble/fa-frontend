@@ -1,8 +1,33 @@
-import { createContext, useContext, useReducer } from 'react';
+import { createContext, useContext, useReducer, useEffect } from 'react';
 import { appReducer, initialState } from '../reducer/appReducer';
 const AppContext = createContext();
 export const AppProvider = ({ children }) => {
     const [state, dispatch] = useReducer(appReducer, initialState);
+
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const token = localStorage.getItem('authToken');
+            const user = localStorage.getItem('authUser');
+            if (token && user) {
+                dispatch({ type: 'SET_AUTH', payload: { token, user: JSON.parse(user) } });
+            }
+        }
+    }, []);
+
+    if (typeof window !== 'undefined') {
+        window.appState = {
+            authUser: state.authUser,
+            token: state.token,
+            students: state.students,
+            companies: state.companies,
+            drives: state.drives,
+            applications: state.applications,
+            filters: state.filters,
+            analytics: state.analytics,
+            loading: state.loading,
+            error: state.error,
+        };
+    }
     return (
         <AppContext.Provider value={{ state, dispatch }}>
         {children}
