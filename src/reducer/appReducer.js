@@ -6,6 +6,7 @@ export const initialState = {
     companies: [],
     drives: [],
     applications: [],
+    interviews: [],
     analytics: {},
     filters: {},
     loading: false,
@@ -25,6 +26,8 @@ export const appReducer = (state, action) => {
         return { ...state, drives: action.payload };
         case 'SET_APPLICATIONS':
         return { ...state, applications: action.payload };
+        case 'SET_INTERVIEWS':
+        return { ...state, interviews: action.payload };
         case 'SET_ANALYTICS':
         return { ...state, analytics: action.payload };
         case 'SET_FILTERS':

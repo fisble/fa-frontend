@@ -18,10 +18,12 @@ export const AppProvider = ({ children }) => {
         window.appState = {
             authUser: state.authUser,
             token: state.token,
+            tasks: state.tasks,
             students: state.students,
             companies: state.companies,
             drives: state.drives,
             applications: state.applications,
+            interviews: state.interviews,
             filters: state.filters,
             analytics: state.analytics,
             loading: state.loading,
