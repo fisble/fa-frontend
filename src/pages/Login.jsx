@@ -9,26 +9,24 @@ export default function Login() {
   const { dispatch } = useAppContext();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [role, setRole] = useState('student');
   const [error, setError] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       dispatch({ type: 'SET_LOADING', payload: true });
-      const TOKEN_URL = import.meta.env.VITE_TOKEN_URL;
-      const STUDENT_ID = import.meta.env.VITE_STUDENT_ID || email;
-      const STUDENT_PASSWORD = import.meta.env.VITE_STUDENT_PASSWORD || password;
-      if (!TOKEN_URL) throw new Error('TOKEN_URL not configured');
-      const res = await axios.post(TOKEN_URL, { studentId: STUDENT_ID, password: STUDENT_PASSWORD }, { headers: { 'Content-Type': 'application/json' } });
-      const examToken = res.data?.token || res.data?.data?.token || res.data?.access_token;
-      if (!examToken) throw new Error('Token not returned from provider');
-      localStorage.setItem('examToken', examToken);
-
+      // Simple login flow: try backend login; if not present and role is admin/placement_officer, register
       let backendResponse;
       try {
         backendResponse = await backendLogin({ email, password });
       } catch (backendError) {
-        backendResponse = await backendRegister({ name: email, email, password, role: 'placement_officer' });
+        // For admin/placement_officer allow auto-register
+        if (role === 'placement_officer' || role === 'admin') {
+          backendResponse = await backendRegister({ name: email, email, password, role });
+        } else {
+          throw backendError;
+        }
       }
 
       const backendToken = backendResponse.data?.data?.token || backendResponse.data?.token;
@@ -51,13 +49,21 @@ export default function Login() {
     <main style={{ padding: '2rem', fontFamily: 'system-ui, sans-serif' }}>
       <h1>Login</h1>
       <form onSubmit={handleSubmit} data-testid="login-form">
-        <div>
+      <div>
           <label htmlFor="email">Email</label>
           <input id="email" value={email} onChange={(e) => setEmail(e.target.value)} type="email" required />
         </div>
         <div>
           <label htmlFor="password">Password</label>
           <input id="password" value={password} onChange={(e) => setPassword(e.target.value)} type="password" required />
+        </div>
+        <div>
+          <label htmlFor="role">Role</label>
+          <select id="role" value={role} onChange={(e) => setRole(e.target.value)}>
+            <option value="student">Student</option>
+            <option value="placement_officer">Placement Officer</option>
+            <option value="admin">Admin</option>
+          </select>
         </div>
         <button type="submit">Login</button>
         {error && <p style={{ color: 'red' }}>{error}</p>}
