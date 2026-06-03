@@ -2,16 +2,23 @@ import axios from 'axios';
 
 // Allow runtime override of the backend API URL so deployed frontend
 // can be pointed to any backend without rebuilding.
+function normalizeBaseUrl(url) {
+  if (!url || typeof url !== 'string') return url;
+  const trimmed = url.trim().replace(/\/+$|\s+/g, '');
+  if (trimmed.endsWith('/api')) return trimmed;
+  return `${trimmed.replace(/\/+$/, '')}/api`;
+}
+
 function resolveBaseUrl() {
   // 1) explicit runtime global (injected by hosting) e.g. window.__FA_API_URL
-  if (typeof window !== 'undefined' && window.__FA_API_URL) return window.__FA_API_URL;
+  if (typeof window !== 'undefined' && window.__FA_API_URL) return normalizeBaseUrl(window.__FA_API_URL);
   // 2) user-saved override in localStorage
   try {
     const saved = (typeof window !== 'undefined') && window.localStorage && window.localStorage.getItem('FA_API_URL');
-    if (saved) return saved;
+    if (saved) return normalizeBaseUrl(saved);
   } catch (e) { /* ignore */ }
   // 3) build-time env var configured in Vercel
-  if (import.meta.env.VITE_API_URL) return import.meta.env.VITE_API_URL;
+  if (import.meta.env.VITE_API_URL) return normalizeBaseUrl(import.meta.env.VITE_API_URL);
   // 4) fallback to localhost (use during local development)
   return 'http://localhost:5000/api';
 }
@@ -30,14 +37,15 @@ api.interceptors.request.use((config) => {
 });
 
 export function setApiUrl(url) {
+  const normalized = normalizeBaseUrl(url);
   if (typeof window !== 'undefined') {
     try {
-      window.localStorage.setItem('FA_API_URL', url);
+      window.localStorage.setItem('FA_API_URL', normalized);
     } catch (e) {
       console.warn('Cannot save API URL', e);
     }
   }
-  api.defaults.baseURL = url || resolveBaseUrl();
+  api.defaults.baseURL = normalized || resolveBaseUrl();
 }
 
 export const setAuthToken = (token) => {
